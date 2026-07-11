@@ -16,6 +16,8 @@ def iniciar_figura_nova(event):
     elif tipo_figura_var.get() == 'Retângulo':
         figura_nova = ("retangulo", (event.x, event.y, event.x, event.y), cor_atual)
 
+    elif tipo_figura_var.get() == 'Círculo':
+        figura_nova = ("circulo", (event.x, event.y, event.x, event.y), cor_atual)
 
 # Quando mouse é movido com o botão pressionado
 def atualizar_figura_nova(event):
@@ -34,6 +36,11 @@ def atualizar_figura_nova(event):
 
     elif fig == "retangulo":
         figura_nova = ("retangulo", 
+                       (figura_nova[1][0], figura_nova[1][1], event.x, event.y), 
+                       cor)
+
+    elif fig == "circulo":
+        figura_nova = ("circulo", 
                        (figura_nova[1][0], figura_nova[1][1], event.x, event.y), 
                        cor)
 
@@ -64,6 +71,10 @@ def desenhar_figuras():
             canvas.create_rectangle(values[0], values[1], values[2], values[3],
                                     outline=cor)
 
+        elif fig == "circulo":
+            raio = ((values[0] - values[2])**2 + (values[1] - values[3])**2) ** 0.5
+            canvas.create_oval(values[0]-raio, values[1]-raio, values[0]+raio, values[1]+raio,
+                               outline=cor)
 
 def desenhar_figura_nova():
     fig, values, cor = figura_nova
@@ -79,6 +90,10 @@ def desenhar_figura_nova():
         canvas.create_rectangle(values[0], values[1], values[2], values[3],
                                 dash=(4, 2), outline=cor)
 
+    elif fig == "circulo":
+        raio = ((values[0] - values[2])**2 + (values[1] - values[3])**2) ** 0.5
+        canvas.create_oval(values[0]-raio, values[1]-raio, values[0]+raio, values[1]+raio,
+                           dash=(4, 2), outline=cor)
 
 def incompleta(figura):
     fig, values, cor = figura
@@ -92,6 +107,8 @@ def incompleta(figura):
     elif fig == "retangulo":
         return (values[0], values[1]) == (values[2], values[3])
 
+    elif fig == "circulo":
+        return (values[0], values[1]) == (values[2], values[3])
 
 #******* MAIN *******#
 
@@ -108,7 +125,7 @@ paddings = {'padx': 5, 'pady': 5}
 
 
 # label
-label = ttk.Label(frame, text='Linha, Rabisco ou Retângulo:')
+label = ttk.Label(frame, text='Linha, Rabisco, Retângulo ou Círculo:')
 label.grid(column=0, row=0, sticky=W, **paddings)
 
 
@@ -119,7 +136,8 @@ option_menu = ttk.OptionMenu(frame, tipo_figura_var,
                              'Linha',
                              'Linha',
                              'Rabisco',
-                             'Retângulo')
+                             'Retângulo',
+                             'Círculo')
 
 option_menu.grid(column=1, row=0, sticky=W, **paddings)
 
