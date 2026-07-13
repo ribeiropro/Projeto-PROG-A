@@ -1,5 +1,5 @@
 from tkinter import *
-from tkinter import ttk, colorchooser
+from tkinter import ttk, colorchooser, messagebox
 import figuras
 
 # Criando o editor
@@ -10,6 +10,9 @@ class EditorDesenho:
         # Dados da aplicação
         self.figuras = []
         self.figura_nova = None
+
+        #Mensagem
+        self.mensagem_poligono_mostrada = False
 
         # Configurações atuais
         self.cor_borda = "black"
@@ -29,7 +32,8 @@ class EditorDesenho:
             "Rabisco": lambda x, y: figuras.Rabisco(x, y, self.cor_borda),
             "Retângulo": lambda x, y: figuras.Retangulo(x, y, self.cor_borda, self.cor_preenchimento),
             "Círculo": lambda x, y: figuras.Circulo(x, y, self.cor_borda, self.cor_preenchimento),
-            "Oval": lambda x, y: figuras.Oval(x, y, self.cor_borda, self.cor_preenchimento)
+            "Oval": lambda x, y: figuras.Oval(x, y, self.cor_borda, self.cor_preenchimento),
+            "Poligono": lambda x, y: figuras.Poligono(x, y, self.cor_borda, self.cor_preenchimento)
         }
 
 
@@ -44,7 +48,22 @@ class EditorDesenho:
 
     def iniciar_figura(self, event):
         tipo = self.tipo_figura_var.get()
-        self.figura_nova = self.fabricas[tipo](event.x, event.y)
+
+        if tipo == "Poligono":
+
+            self.canvas.bind("<Motion>", self.atualizar_poligono)
+
+            if self.figura_nova is None:
+                self.figura_nova = figuras.Poligono(event.x, event.y, self.cor_borda, self.cor_preenchimento)
+
+            else:
+                self.figura_nova.adicionar_ponto(event.x, event.y)
+
+        else:
+             self.canvas.unbind("<Motion>")
+             self.figura_nova = self.fabricas[tipo](event.x, event.y)
+
+        self.desenhar()
 
 
     def atualizar_figura(self, event):
@@ -55,10 +74,30 @@ class EditorDesenho:
         self.figura_nova.atualizar(event.x, event.y)
         self.desenhar()
 
+    def atualizar_poligono(self, event):
+        if isinstance(self.figura_nova, figuras.Poligono):
+            self.figura_nova.atualizar(event.x, event.y)
+            self.desenhar()
+
     def finalizar_figura(self, event):
 
         if self.figura_nova is None:
             return
+
+        if isinstance(self.figura_nova, figuras.Poligono):
+            return
+
+        if not self.figura_nova.incompleta():
+            self.figuras.append(self.figura_nova)
+
+        self.figura_nova = None
+        self.desenhar()
+
+    def finalizar_poligono(self, event):
+        if not isinstance(self.figura_nova, figuras.Poligono):
+            return
+
+        self.figura_nova.pontos.pop()
 
         if not self.figura_nova.incompleta():
             self.figuras.append(self.figura_nova)
@@ -80,6 +119,13 @@ class EditorDesenho:
             self.cor_preenchimento = cor[1]
             self.btn_preenchimento.config(bg=self.cor_preenchimento)
 
+    def instrucao_poligono(self, *args):
+        if self.tipo_figura_var.get() == "Poligono":
+            if not self.mensagem_poligono_mostrada:
+
+                messagebox.showinfo("Poligono", "Botão Esquerdo: Adicionar vértices.\n Botão Direito: Finalizar o polígono.")
+                self.mensagem_poligono_mostrada = True
+
     def criar_interface(self):
 
         self.root = Tk()
@@ -97,6 +143,9 @@ class EditorDesenho:
 
         self.tipo_figura_var = StringVar(value="Linha")
 
+        self.tipo_figura_var.trace_add("write", self.instrucao_poligono)
+
+
         ttk.OptionMenu(
             self.frame,
             self.tipo_figura_var,
@@ -105,7 +154,8 @@ class EditorDesenho:
             "Rabisco",
             "Retângulo",
             "Círculo",
-            "Oval"
+            "Oval",
+            "Poligono"
         ).grid(column=1, row=0, sticky=W, **paddings)
 
         self.btn_cor = Button(
@@ -139,6 +189,7 @@ class EditorDesenho:
         self.canvas.bind("<Button-1>", self.iniciar_figura)
         self.canvas.bind("<B1-Motion>", self.atualizar_figura)
         self.canvas.bind("<ButtonRelease-1>", self.finalizar_figura)
+        self.canvas.bind("<Button-3>", self.finalizar_poligono)
 
     def executar(self):
         self.criar_interface()
