@@ -1,123 +1,100 @@
-from view import View
-import model
+from tkinter import colorchooser, messagebox
+import model as modelo
+from view import EditorView
 
-class Controller:
+class EditorController:
+    def __init__(self, root):
+        self.root = root
+        self.modelo = modelo.ModeloDesenho()
+        self.view = EditorView(self.root, self)
 
-    def __init__(self):
-        self.view = View()
-
-        # Dados da aplicação
-        self.figuras = []
-        self.figura_nova = None
-
-        #Mensagem
-        self.mensagem_poligono_mostrada = False
-
-        # Configurações atuais
-        self.cor_borda = "black"
-        self.cor_preenchimento = None
-
-        # Fábrica de figuras
         self.fabricas = {
-            "Linha": lambda x, y: model.Linha(x, y, self.cor_borda),
-            "Rabisco": lambda x, y: model.Rabisco(x, y, self.cor_borda),
-            "Retângulo": lambda x, y: model.Retangulo(x, y, self.cor_borda, self.cor_preenchimento),
-            "Círculo": lambda x, y: model.Circulo(x, y, self.cor_borda, self.cor_preenchimento),
-            "Oval": lambda x, y: model.Oval(x, y, self.cor_borda, self.cor_preenchimento),
-            "Poligono": lambda x, y: model.Poligono(x, y, self.cor_borda, self.cor_preenchimento)
+            "Linha": lambda x, y: modelo.Linha(x, y, self.modelo.cor_borda),
+            "Rabisco": lambda x, y: modelo.Rabisco(x, y, self.modelo.cor_borda),
+            "Retângulo": lambda x, y: modelo.Retangulo(x, y, self.modelo.cor_borda, self.modelo.cor_preenchimento),
+            "Círculo": lambda x, y: modelo.Circulo(x, y, self.modelo.cor_borda, self.modelo.cor_preenchimento),
+            "Oval": lambda x, y: modelo.Oval(x, y, self.modelo.cor_borda, self.modelo.cor_preenchimento),
+            "Poligono": lambda x, y: modelo.Poligono(x, y, self.modelo.cor_borda, self.modelo.cor_preenchimento)
         }
 
+    def inicializar(self):
+        self.view.criar_interface(self.modelo.cor_borda)
 
-    def desenhar(self):
-        self.canvas.delete("all")
-
-        for figura in self.figuras:
-            figura.desenhar(self.canvas)
-
-        if self.figura_nova:
-            self.figura_nova.desenhar_preview(self.canvas)
+    def renderizar_tela(self):
+        self.view.desenhar(self.modelo)
 
     def iniciar_figura(self, event):
-        tipo = self.tipo_figura_var.get()
+        tipo = self.view.tipo_figura_var.get()
 
         if tipo == "Poligono":
+            self.view.canvas.bind("<Motion>", self.atualizar_poligono)
 
-            self.canvas.bind("<Motion>", self.atualizar_poligono)
-
-            if self.figura_nova is None:
-                self.figura_nova = model.Poligono(event.x, event.y, self.cor_borda, self.cor_preenchimento)
-
+            if self.modelo.figura_nova is None:
+                self.modelo.figura_nova = modelo.Poligono(
+                    event.x, event.y, self.modelo.cor_borda, self.modelo.cor_preenchimento
+                )
             else:
-                self.figura_nova.adicionar_ponto(event.x, event.y)
-
+                self.modelo.figura_nova.adicionar_ponto(event.x, event.y)
         else:
-             self.canvas.unbind("<Motion>")
-             self.figura_nova = self.fabricas[tipo](event.x, event.y)
+            self.view.canvas.unbind("<Motion>")
+            self.modelo.figura_nova = self.fabricas[tipo](event.x, event.y)
 
-        self.desenhar()
-
+        self.renderizar_tela()
 
     def atualizar_figura(self, event):
-
-        if self.figura_nova is None:
+        if self.modelo.figura_nova is None:
             return
 
-        self.figura_nova.atualizar(event.x, event.y)
-        self.desenhar()
+        self.modelo.figura_nova.atualizar(event.x, event.y)
+        self.renderizar_tela()
 
     def atualizar_poligono(self, event):
-        if isinstance(self.figura_nova, model.Poligono):
-            self.figura_nova.atualizar(event.x, event.y)
-            self.desenhar()
+        if isinstance(self.modelo.figura_nova, modelo.Poligono):
+            self.modelo.figura_nova.atualizar(event.x, event.y)
+            self.renderizar_tela()
 
     def finalizar_figura(self, event):
-
-        if self.figura_nova is None:
+        if self.modelo.figura_nova is None:
             return
 
-        if isinstance(self.figura_nova, model.Poligono):
+        if isinstance(self.modelo.figura_nova, modelo.Poligono):
             return
 
-        if not self.figura_nova.incompleta():
-            self.figuras.append(self.figura_nova)
+        if not self.modelo.figura_nova.incompleta():
+            self.modelo.figuras.append(self.modelo.figura_nova)
 
-        self.figura_nova = None
-        self.desenhar()
+        self.modelo.figura_nova = None
+        self.renderizar_tela()
 
     def finalizar_poligono(self, event):
-        if not isinstance(self.figura_nova, model.Poligono):
+        if not isinstance(self.modelo.figura_nova, modelo.Poligono):
             return
 
-        self.figura_nova.pontos.pop()
+        self.modelo.figura_nova.pontos.pop()
 
-        if not self.figura_nova.incompleta():
-            self.figuras.append(self.figura_nova)
+        if not self.modelo.figura_nova.incompleta():
+            self.modelo.figuras.append(self.modelo.figura_nova)
 
-        self.figura_nova = None
-        self.desenhar()
+        self.modelo.figura_nova = None
+        self.renderizar_tela()
 
     def escolher_cor_borda(self):
         cor = colorchooser.askcolor()
-
         if cor[1] is not None:
-            self.cor_borda = cor[1]
-            self.btn_cor.config(bg=self.cor_borda)
+            self.modelo.cor_borda = cor[1]
+            self.view.btn_cor.config(bg=self.modelo.cor_borda)
 
     def escolher_cor_preenchimento(self):
         cor = colorchooser.askcolor()
-
         if cor[1] is not None:
-            self.cor_preenchimento = cor[1]
-            self.btn_preenchimento.config(bg=self.cor_preenchimento)
+            self.modelo.cor_preenchimento = cor[1]
+            self.view.btn_preenchimento.config(bg=self.modelo.cor_preenchimento)
 
     def instrucao_poligono(self, *args):
-        if self.tipo_figura_var.get() == "Poligono":
-            if not self.mensagem_poligono_mostrada:
-
-                messagebox.showinfo("Poligono", "Botão Esquerdo: Adicionar vértices.\n Botão Direito: Finalizar o polígono.")
-                self.mensagem_poligono_mostrada = True
-
-    def executar(self):
-        self.criar_interface()
-        self.root.mainloop()
-        
+        if self.view.tipo_figura_var.get() == "Poligono":
+            if not self.modelo.mensagem_poligono_mostrada:
+                messagebox.showinfo(
+                    "Poligono", 
+                    "Botão Esquerdo: Adicionar vértices.\nBotão Direito: Finalizar o polígono."
+                )
+                self.modelo.mensagem_poligono_mostrada = True
