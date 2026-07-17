@@ -1,10 +1,6 @@
-import tkinter as tk 
 from abc import ABC, abstractmethod
 
-# Classe mãe
-
 class Figura(ABC):
-
     def __init__(self, x, y, cor_borda, cor_preenchimento=None):
         self.x1 = self.x2 = x
         self.y1 = self.y2 = y
@@ -25,9 +21,8 @@ class Figura(ABC):
     def desenhar_preview(self, canvas):
         pass
 
-# Subclasses de figura
-class Linha(Figura):
 
+class Linha(Figura):
     def desenhar(self, canvas):
         canvas.create_line(self.x1, self.y1, self.x2, self.y2, fill=self.cor_borda)
 
@@ -37,7 +32,6 @@ class Linha(Figura):
 
 
 class Retangulo(Figura):
-
     def desenhar(self, canvas):
         canvas.create_rectangle(
             self.x1, self.y1, self.x2, self.y2,
@@ -52,9 +46,9 @@ class Retangulo(Figura):
             fill=self.cor_preenchimento,
             dash=(4, 2)
         )
+
 
 class Oval(Figura):
-
     def desenhar(self, canvas):
         canvas.create_oval(
             self.x1, self.y1, self.x2, self.y2,
@@ -70,14 +64,13 @@ class Oval(Figura):
             dash=(4, 2)
         )
 
-class Circulo(Figura):
 
+class Circulo(Figura):
     def _raio(self):
         return ((self.x1 - self.x2) ** 2 + (self.y1 - self.y2) ** 2) ** 0.5
 
     def desenhar(self, canvas):
         r = self._raio()
-
         canvas.create_oval(
             self.x1 - r,
             self.y1 - r,
@@ -89,7 +82,6 @@ class Circulo(Figura):
 
     def desenhar_preview(self, canvas):
         r = self._raio()
-
         canvas.create_oval(
             self.x1 - r,
             self.y1 - r,
@@ -100,8 +92,8 @@ class Circulo(Figura):
             dash=(4, 2)
         )
 
-class Rabisco(Figura):
 
+class Rabisco(Figura):
     def __init__(self, x, y, cor_borda):
         super().__init__(x, y, cor_borda)
         self.pontos = [(x, y)]
@@ -119,9 +111,9 @@ class Rabisco(Figura):
 
     def incompleta(self):
         return len(self.pontos) <= 1
-    
+
+
 class Poligono(Figura):
-    
     def __init__(self, x, y, cor_borda, cor_preenchimento):
         super().__init__(x, y, cor_borda, cor_preenchimento)
         self.pontos = [(x, y)]
@@ -143,3 +135,11 @@ class Poligono(Figura):
 
     def incompleta(self):
         return len(self.pontos) < 3
+
+class ModeloDesenho:
+    def __init__(self):
+        self.figuras = []
+        self.figura_nova = None
+        self.mensagem_poligono_mostrada = False
+        self.cor_borda = "black"
+        self.cor_preenchimento = None

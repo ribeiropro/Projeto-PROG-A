@@ -1,6 +1,9 @@
-from controller import Controller
-
+from tkinter import Tk
+from controller import EditorController
 
 if __name__ == "__main__":
-    editor = Controller()
-    editor.executar()
+    root = Tk()
+    root.title("Editor de Desenhos")
+    controlador = EditorController(root)
+    controlador.inicializar()
+    root.mainloop()
