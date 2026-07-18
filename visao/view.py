@@ -12,6 +12,8 @@ class EditorView:
         self.btn_cor = None
         self.btn_preenchimento = None
 
+        self.mensagem_poligono_mostrada = False
+
     def criar_interface(self, cor_borda_inicial):
         self.frame = Frame(self.root)
         self.frame.pack()

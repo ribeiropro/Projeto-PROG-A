@@ -1,20 +1,26 @@
 from tkinter import colorchooser, messagebox
-import model as modelo
-from view import EditorView
+from modelo.model import ModeloDesenho
+from modelo.linha import Linha
+from modelo.rabisco import Rabisco
+from modelo.retangulo import Retangulo
+from modelo.circulo import Circulo
+from modelo.oval import Oval
+from modelo.poligono import Poligono
+from visao.view import EditorView
 
 class EditorController:
     def __init__(self, root):
         self.root = root
-        self.modelo = modelo.ModeloDesenho()
+        self.modelo = ModeloDesenho()
         self.view = EditorView(self.root, self)
 
         self.fabricas = {
-            "Linha": lambda x, y: modelo.Linha(x, y, self.modelo.cor_borda),
-            "Rabisco": lambda x, y: modelo.Rabisco(x, y, self.modelo.cor_borda),
-            "Retângulo": lambda x, y: modelo.Retangulo(x, y, self.modelo.cor_borda, self.modelo.cor_preenchimento),
-            "Círculo": lambda x, y: modelo.Circulo(x, y, self.modelo.cor_borda, self.modelo.cor_preenchimento),
-            "Oval": lambda x, y: modelo.Oval(x, y, self.modelo.cor_borda, self.modelo.cor_preenchimento),
-            "Poligono": lambda x, y: modelo.Poligono(x, y, self.modelo.cor_borda, self.modelo.cor_preenchimento)
+            "Linha": lambda x, y: Linha(x, y, self.modelo.cor_borda),
+            "Rabisco": lambda x, y: Rabisco(x, y, self.modelo.cor_borda),
+            "Retângulo": lambda x, y: Retangulo(x, y, self.modelo.cor_borda, self.modelo.cor_preenchimento),
+            "Círculo": lambda x, y: Circulo(x, y, self.modelo.cor_borda, self.modelo.cor_preenchimento),
+            "Oval": lambda x, y: Oval(x, y, self.modelo.cor_borda, self.modelo.cor_preenchimento),
+            "Poligono": lambda x, y: Poligono(x, y, self.modelo.cor_borda, self.modelo.cor_preenchimento)
         }
 
     def inicializar(self):
@@ -30,7 +36,7 @@ class EditorController:
             self.view.canvas.bind("<Motion>", self.atualizar_poligono)
 
             if self.modelo.figura_nova is None:
-                self.modelo.figura_nova = modelo.Poligono(
+                self.modelo.figura_nova = Poligono(
                     event.x, event.y, self.modelo.cor_borda, self.modelo.cor_preenchimento
                 )
             else:
@@ -49,7 +55,7 @@ class EditorController:
         self.renderizar_tela()
 
     def atualizar_poligono(self, event):
-        if isinstance(self.modelo.figura_nova, modelo.Poligono):
+        if isinstance(self.modelo.figura_nova, Poligono):
             self.modelo.figura_nova.atualizar(event.x, event.y)
             self.renderizar_tela()
 
@@ -57,7 +63,7 @@ class EditorController:
         if self.modelo.figura_nova is None:
             return
 
-        if isinstance(self.modelo.figura_nova, modelo.Poligono):
+        if isinstance(self.modelo.figura_nova, Poligono):
             return
 
         if not self.modelo.figura_nova.incompleta():
@@ -67,7 +73,7 @@ class EditorController:
         self.renderizar_tela()
 
     def finalizar_poligono(self, event):
-        if not isinstance(self.modelo.figura_nova, modelo.Poligono):
+        if not isinstance(self.modelo.figura_nova, Poligono):
             return
 
         self.modelo.figura_nova.pontos.pop()
@@ -92,9 +98,9 @@ class EditorController:
 
     def instrucao_poligono(self, *args):
         if self.view.tipo_figura_var.get() == "Poligono":
-            if not self.modelo.mensagem_poligono_mostrada:
+            if not self.view.mensagem_poligono_mostrada:
                 messagebox.showinfo(
                     "Poligono", 
                     "Botão Esquerdo: Adicionar vértices.\nBotão Direito: Finalizar o polígono."
                 )
-                self.modelo.mensagem_poligono_mostrada = True
+                self.view.mensagem_poligono_mostrada = True
