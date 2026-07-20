@@ -24,7 +24,7 @@ class EstadoFerramenta(ABC):
     def clique_direito(self, controlador, event):
         pass
 
-# Estado para: Linha, Rabisco, Retângulo, Círculo e Oval
+# Estado para Linha, Rabisco, Retângulo, Círculo e Oval
 class EstadoFormaComum(EstadoFerramenta):
     def mouse_pressionado(self, controlador, event):
         controlador.view.canvas.unbind("<Motion>")
@@ -50,7 +50,7 @@ class EstadoFormaComum(EstadoFerramenta):
 # Estado específico para o Polígono
 class EstadoPoligono(EstadoFerramenta):
     def mouse_pressionado(self, controlador, event):
-        # Preview dinâmico
+        # Passa a escutar o movimento do mouse para o preview dinâmico
         controlador.view.canvas.bind("<Motion>", controlador.atualizar_figura)
         
         if controlador.modelo.figura_nova is None:
@@ -62,7 +62,7 @@ class EstadoPoligono(EstadoFerramenta):
         controlador.renderizar_tela()
 
     def mouse_arrastado(self, controlador, event):
-        # Atualizando o ponto flutuante enquanto arrasta ou move
+        # O polígono precisa atualizar o ponto flutuante enquanto arrasta ou move
         if controlador.modelo.figura_nova:
             controlador.modelo.figura_nova.atualizar(event.x, event.y)
             controlador.renderizar_tela()

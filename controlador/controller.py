@@ -8,6 +8,7 @@ from modelo.circulo import Circulo
 from modelo.oval import Oval
 from modelo.poligono import Poligono
 from visao.view import EditorView
+from controlador.estados import EstadoFormaComum, EstadoPoligono
 
 class EditorController:
     def __init__(self, root):
@@ -23,6 +24,22 @@ class EditorController:
             "Oval": lambda x, y: Oval(x, y, self.modelo.cor_borda, self.modelo.cor_preenchimento),
             "Poligono": lambda x, y: Poligono(x, y, self.modelo.cor_borda, self.modelo.cor_preenchimento)
         }
+        estado_forma = EstadoFormaComum()
+
+        self.estados = {
+    "Linha": estado_forma,
+    "Rabisco": estado_forma,
+    "Retângulo": estado_forma,
+    "Círculo": estado_forma,
+    "Oval": estado_forma,
+    "Poligono": EstadoPoligono()
+}
+
+        self.estado_atual = self.estados["Linha"]
+        
+    def atualizar_estado(self, *args):
+        tipo = self.view.tipo_figura_var.get()
+        self.estado_atual = self.estados[tipo]
 
     def inicializar(self):
         self.view.criar_interface(self.modelo.cor_borda)
@@ -31,59 +48,16 @@ class EditorController:
         self.view.desenhar(self.modelo)
 
     def iniciar_figura(self, event):
-        tipo = self.view.tipo_figura_var.get()
-
-        if tipo == "Poligono":
-            self.view.canvas.bind("<Motion>", self.atualizar_poligono)
-
-            if self.modelo.figura_nova is None:
-                self.modelo.figura_nova = Poligono(
-                    event.x, event.y, self.modelo.cor_borda, self.modelo.cor_preenchimento
-                )
-            else:
-                self.modelo.figura_nova.adicionar_ponto(event.x, event.y)
-        else:
-            self.view.canvas.unbind("<Motion>")
-            self.modelo.figura_nova = self.fabricas[tipo](event.x, event.y)
-
-        self.renderizar_tela()
+        self.estado_atual.mouse_pressionado(self, event)
 
     def atualizar_figura(self, event):
-        if self.modelo.figura_nova is None:
-            return
-
-        self.modelo.figura_nova.atualizar(event.x, event.y)
-        self.renderizar_tela()
-
-    def atualizar_poligono(self, event):
-        if isinstance(self.modelo.figura_nova, Poligono):
-            self.modelo.figura_nova.atualizar(event.x, event.y)
-            self.renderizar_tela()
+        self.estado_atual.mouse_arrastado(self, event)
 
     def finalizar_figura(self, event):
-        if self.modelo.figura_nova is None:
-            return
-
-        if isinstance(self.modelo.figura_nova, Poligono):
-            return
-
-        if not self.modelo.figura_nova.incompleta():
-            self.modelo.figuras.append(self.modelo.figura_nova)
-
-        self.modelo.figura_nova = None
-        self.renderizar_tela()
+        self.estado_atual.mouse_solto(self, event)
 
     def finalizar_poligono(self, event):
-        if not isinstance(self.modelo.figura_nova, Poligono):
-            return
-
-        self.modelo.figura_nova.pontos.pop()
-
-        if not self.modelo.figura_nova.incompleta():
-            self.modelo.figuras.append(self.modelo.figura_nova)
-
-        self.modelo.figura_nova = None
-        self.renderizar_tela()
+        self.estado_atual.clique_direito(self, event)
 
     def escolher_cor_borda(self):
         cor = colorchooser.askcolor()

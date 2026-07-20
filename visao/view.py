@@ -27,6 +27,7 @@ class EditorView:
 
         self.tipo_figura_var = StringVar(value="Linha")
         self.tipo_figura_var.trace_add("write", self.controller.instrucao_poligono)
+        self.tipo_figura_var.trace_add("write", self.controller.atualizar_estado)
 
         ttk.OptionMenu(
             self.frame,
