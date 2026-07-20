@@ -70,6 +70,12 @@ class EditorView:
         self.canvas.bind("<ButtonRelease-1>", self.controller.finalizar_figura)
         self.canvas.bind("<Button-3>", self.controller.finalizar_poligono)
 
+        self.btn_salvar = Button(self.frame, text="Salvar Projeto", command=self.controller.salvar_projeto, bg ='white')
+        self.btn_salvar.grid(column=0, row=3, sticky=W, **paddings)
+
+        self.btn_carregar = Button(self.frame, text="Carregar Projeto", command= None, bg ='white')
+        self.btn_carregar.grid(column=1, row=3, sticky=W, **paddings)
+
     def desenhar(self, modelo):
         self.canvas.delete("all")
 

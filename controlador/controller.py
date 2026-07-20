@@ -1,4 +1,5 @@
 from tkinter import colorchooser, messagebox
+from tkinter import filedialog
 from modelo.model import ModeloDesenho
 from modelo.linha import Linha
 from modelo.rabisco import Rabisco
@@ -104,3 +105,10 @@ class EditorController:
                     "Botão Esquerdo: Adicionar vértices.\nBotão Direito: Finalizar o polígono."
                 )
                 self.view.mensagem_poligono_mostrada = True
+
+    def salvar_projeto(self):
+
+        caminho = filedialog.asksaveasfilename(
+            defaultextension=".json", filetypes=[("Arquivos JSON", "*.json")])
+        if caminho:
+            self.modelo.salvar_para_arquivo(caminho)
