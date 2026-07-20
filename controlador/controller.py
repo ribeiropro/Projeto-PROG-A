@@ -112,3 +112,19 @@ class EditorController:
             defaultextension=".json", filetypes=[("Arquivos JSON", "*.json")])
         if caminho:
             self.modelo.salvar_para_arquivo(caminho)
+
+    def carregar_projeto(self):
+
+        caminho = filedialog.askopenfilename(filetypes=[("Arquivos JSON", "*.json")])
+        if caminho:
+            dicionario_classes = {
+                "Linha": Linha,
+                "Rabisco": Rabisco,
+                "Retangulo": Retangulo,
+                "Circulo": Circulo,
+                "Oval": Oval,
+                "Poligono": Poligono,
+            }
+
+            self.modelo.carregar_de_arquivo(caminho, dicionario_classes)
+            self.renderizar_tela()
